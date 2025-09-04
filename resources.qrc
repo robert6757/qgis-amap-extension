@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/amap_extension" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>

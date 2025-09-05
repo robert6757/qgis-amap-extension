@@ -20,12 +20,22 @@
  ***************************************************************************/
 """
 
-
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.core import QgsSettings
 
 class GlobalHelper():
-    def __init__(self):
-        pass
+
+    __access_key_tag = "qgis-amap-extension/key"
+
+    @staticmethod
+    def get_access_key():
+        g_setting = QgsSettings()
+        return g_setting.value(GlobalHelper.__access_key_tag)
+
+    @staticmethod
+    def set_access_key(key):
+        g_setting = QgsSettings()
+        g_setting.setValue(GlobalHelper.__access_key_tag, key)
 
     @staticmethod
     def tr(context, message):

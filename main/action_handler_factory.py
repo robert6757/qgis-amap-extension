@@ -22,6 +22,8 @@
 """
 
 from .basemap.basemap_handler import BasemapHandler
+from .options.options_handler import OptionsHandler
+from .search.search_handler import SearchHandler
 
 class ActionHandlerFactory:
 
@@ -30,6 +32,18 @@ class ActionHandlerFactory:
 
     @staticmethod
     def create_basemap_handler(iface):
-        basemap_handler = BasemapHandler()
-        basemap_handler.attach(iface)
-        return basemap_handler
+        handler = BasemapHandler()
+        handler.attach(iface)
+        return handler
+
+    @staticmethod
+    def create_options_handler(iface):
+        handler = OptionsHandler()
+        handler.attach(iface)
+        return handler
+
+    @staticmethod
+    def create_search_handler(iface):
+        handler = SearchHandler()
+        handler.attach(iface)
+        return handler

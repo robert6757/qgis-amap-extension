@@ -73,6 +73,10 @@ class AMapExtension:
         self.pluginIsActive = False
         self.dockwidget = None
 
+        self.basemap_handler = ActionHandlerFactory.create_basemap_handler(self.iface)
+        self.options_handler = ActionHandlerFactory.create_options_handler(self.iface)
+        self.search_handler = ActionHandlerFactory.create_search_handler(self.iface)
+
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -176,13 +180,11 @@ class AMapExtension:
         self.init_gui_toolbar()
 
     def init_gui_menu(self):
-        basemap_handler = ActionHandlerFactory.create_basemap_handler(self.iface)
-
         icon_path = ':/plugins/amap_extension/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Add Layer'),
-            callback=lambda: basemap_handler.handle_action("Select Layer"),
+            callback=lambda: self.basemap_handler.handle_action("Select Layer"),
             add_to_toolbar=False,
             add_to_menu=True,
             parent=self.iface.mainWindow())
@@ -191,7 +193,7 @@ class AMapExtension:
         self.add_action(
             icon_path,
             text=self.tr(u'Search'),
-            callback=self.handle_search,
+            callback=lambda: self.search_handler.handle_action(""),
             add_to_toolbar=False,
             add_to_menu=True,
             parent=self.iface.mainWindow())
@@ -218,7 +220,7 @@ class AMapExtension:
         self.add_action(
             icon_path,
             text=self.tr(u'Options'),
-            callback=self.handle_options,
+            callback=lambda: self.options_handler.handle_action(params=None),
             add_to_toolbar=False,
             add_to_menu=True,
             parent=self.iface.mainWindow())
@@ -226,13 +228,12 @@ class AMapExtension:
     def init_gui_toolbar(self):
 
         add_layer_menu = QMenu(self.tr(u"Add Layer"))
-        basemap_handler = ActionHandlerFactory.create_basemap_handler(self.iface)
 
         icon_path = ':/plugins/amap_extension/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Satellite Layer'),
-            callback=lambda: basemap_handler.handle_action("Satellite Layer"),
+            callback=lambda: self.basemap_handler.handle_action("Satellite Layer"),
             add_to_toolbar=True,
             add_to_menu=False,
             parent_menu=add_layer_menu,
@@ -240,7 +241,7 @@ class AMapExtension:
         self.add_action(
             icon_path,
             text=self.tr(u'Satellite Label Layer'),
-            callback=lambda: basemap_handler.handle_action("Satellite Label Layer"),
+            callback=lambda: self.basemap_handler.handle_action("Satellite Label Layer"),
             add_to_toolbar=True,
             add_to_menu=False,
             parent_menu=add_layer_menu,
@@ -248,7 +249,7 @@ class AMapExtension:
         self.add_action(
             icon_path,
             text=self.tr(u'Vector Layer'),
-            callback=lambda: basemap_handler.handle_action("Vector Layer"),
+            callback=lambda: self.basemap_handler.handle_action("Vector Layer"),
             add_to_toolbar=True,
             add_to_menu=False,
             parent_menu=add_layer_menu,
@@ -268,7 +269,7 @@ class AMapExtension:
         self.add_action(
             icon_path,
             text=self.tr(u'Search'),
-            callback=self.handle_search,
+            callback=lambda: self.search_handler.handle_action(""),
             add_to_toolbar=True,
             add_to_menu=False,
             parent=self.iface.mainWindow())
@@ -295,7 +296,7 @@ class AMapExtension:
         self.add_action(
             icon_path,
             text=self.tr(u'Options'),
-            callback=self.handle_options,
+            callback=lambda: self.options_handler.handle_action(params=None),
             add_to_toolbar=True,
             add_to_menu=False,
             parent=self.iface.mainWindow())
@@ -320,9 +321,6 @@ class AMapExtension:
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
-
-        #print "** UNLOAD AMapExtension"
-
         for action in self.actions:
             self.iface.removePluginMenu(
                 self.tr(u'AMap Extension'),
@@ -331,10 +329,9 @@ class AMapExtension:
         # remove the toolbar
         del self.toolbar
 
-    #--------------------------------------------------------------------------
-
-    def handle_search(self):
-        pass
+        self.basemap_handler.unload()
+        self.options_handler.unload()
+        self.search_handler.unload()
 
     def handle_navigate(self):
         pass
@@ -342,28 +339,3 @@ class AMapExtension:
     def handle_convert_coordinate(self):
         pass
 
-    def handle_options(self):
-        pass
-
-    # def run(self):
-    #     """Run method that loads and starts the plugin"""
-    #
-    #     if not self.pluginIsActive:
-    #         self.pluginIsActive = True
-    #
-    #         #print "** STARTING AMapExtension"
-    #
-    #         # dockwidget may not exist if:
-    #         #    first run of plugin
-    #         #    removed on close (see self.onClosePlugin method)
-    #         if self.dockwidget == None:
-    #             # Create the dockwidget (after translation) and keep reference
-    #             self.dockwidget = AMapExtensionDockWidget()
-    #
-    #         # connect to provide cleanup on closing of dockwidget
-    #         self.dockwidget.closingPlugin.connect(self.onClosePlugin)
-    #
-    #         # show the dockwidget
-    #         # TODO: fix to allow choice of dock location
-    #         self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.dockwidget)
-    #         self.dockwidget.show()

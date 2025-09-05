@@ -33,3 +33,8 @@ class ActionHandler(ABC):
     def handle_action(self, params):
         """main process for handling action."""
         pass
+
+    @abstractmethod
+    def unload(self):
+        """unload this action handler"""
+        pass

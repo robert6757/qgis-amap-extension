@@ -90,3 +90,9 @@ class BasemapHandler(ActionHandler):
         layer_name = current_item.text()
         self.handle_action(layer_name)
         self.addlayer_widget.close()
+
+    def unload(self):
+        """unload this action handler"""
+        if self.addlayer_widget is not None:
+            self.addlayer_widget.close()
+

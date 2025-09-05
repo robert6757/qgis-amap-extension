@@ -1,0 +1,154 @@
+# -*- coding: utf-8 -*-
+"""
+/***************************************************************************
+ AMapExtension
+                                 Search Handler
+ implement ActionHandler class, provide poi search.
+                              -------------------
+        begin                : 2025-09-05
+        copyright            : (C) 2025 by phoenix-gis
+        email                : phoenixgis@sina.com
+        website              : phoenix-gis.cn
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
+from qgis.PyQt import uic
+from qgis.core import QgsSettings, QgsNetworkAccessManager
+from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery
+from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
+from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
+
+from ..action_handler import ActionHandler
+from .select_region_dlg import SelectRegionDlg
+from ..global_helper import GlobalHelper
+
+import os
+import json
+
+class SearchHandler(ActionHandler):
+
+    def __init__(self):
+        self.iface = None
+        self.search_widget = None
+        self.search_form = None
+        self.selected_region_name = None
+
+        self.__key_tag = "qgis-amap-extension/search/region"
+
+        self.network_manager = QgsNetworkAccessManager.instance()
+
+    def attach(self, iface):
+        """attach qgis python interface."""
+        self.iface = iface
+
+    def handle_action(self, params):
+        if self.search_widget is not None:
+            self.search_widget.show()
+            return
+
+        # show search dock widget.
+        generated_class, base_class = uic.loadUiType(os.path.join(
+            os.path.dirname(__file__), '../../ui/SearchDockWidget.ui'))
+        if generated_class is None or base_class is None:
+            return None
+
+        # get previous region from QgsSettings
+        g_setting = QgsSettings()
+        self.selected_region_name = g_setting.value(self.__key_tag)
+
+        # initialize dialog ui
+        self.search_widget = base_class()
+        self.search_form = generated_class()
+        self.search_form.setupUi(self.search_widget)
+
+        self.search_form.tableWidget.setColumnCount(3)
+        column_headers = [self.search_widget.tr("Name"), self.search_widget.tr("City"), self.search_widget.tr("Address")]
+        self.search_form.tableWidget.setHorizontalHeaderLabels(column_headers)
+
+        if self.selected_region_name is not None:
+            self.search_form.btnRegion.setText(self.selected_region_name)
+
+        self.search_form.btnRegion.clicked.connect(self.handle_switch_region)
+        self.search_form.btnSearch.clicked.connect(self.handle_search)
+        self.search_form.lineEditKey.returnPressed.connect(self.handle_search)
+
+        # show dock widget
+        self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.search_widget)
+
+    def unload(self):
+        """unload this action handler"""
+        if self.search_widget is not None:
+            self.iface.removeDockWidget(self.search_widget)
+            self.search_widget.close()
+            self.search_widget = None
+            self.search_form = None
+
+    def handle_search(self):
+        # clear result list
+        while self.search_form.tableWidget.rowCount() > 0:
+            self.search_form.tableWidget.removeRow(0)
+
+        # url = f"https://restapi.amap.com/v5/place/text?key=e7f1bd64ec16414f947f2c508e511c40&keywords=尖沙咀&region=香港特别行政区"
+        url = QUrl("https://restapi.amap.com/v5/place/text")
+        url_query = QUrlQuery()
+        url_query.addQueryItem("page_size", '25')
+        url_query.addQueryItem("key", GlobalHelper.get_access_key())
+        url_query.addQueryItem("keywords", self.search_form.lineEditKey.text())
+        if self.selected_region_name is not None and self.selected_region_name != self.search_widget.tr(u"Nationwide"):
+            url_query.addQueryItem("region", self.selected_region_name)
+        url.setQuery(url_query)
+        request = QNetworkRequest(url)
+        reply = self.network_manager.blockingGet(request)
+        if reply.error() != QNetworkReply.NoError:
+            return
+        try:
+            reply_json = json.loads(reply.content().data())
+        except json.decoder.JSONDecodeError:
+            self.iface.messageBar().pushWarning(
+                GlobalHelper.tr(u"GlobalHelper", u"AMap Search Error"),
+                GlobalHelper.tr(u"GlobalHelper", u"Fail to parse poi results responding from AMap server.")
+            )
+
+        if int(reply_json['status']) != 1:
+            QMessageBox.information(self.search_widget,
+                                    GlobalHelper.tr(u"GlobalHelper",u"AMap Search Error"),
+                                    GlobalHelper.tr(u"GlobalHelper",u"Your request to AMap server is unavailable."),QMessageBox.Ok)
+            return
+
+        # add result to table widget.
+        self.search_form.tableWidget.setRowCount(len(reply_json['pois']))
+        row_i = 0
+        for poi_item in reply_json['pois']:
+            name_item = QTableWidgetItem(poi_item["name"])
+            self.search_form.tableWidget.setItem(row_i, 0, name_item)
+            city_item = QTableWidgetItem(poi_item["cityname"])
+            self.search_form.tableWidget.setItem(row_i, 1, city_item)
+            address_item = QTableWidgetItem(poi_item["address"])
+            self.search_form.tableWidget.setItem(row_i, 2, address_item)
+
+            row_i += 1
+        self.search_form.tableWidget.resizeColumnsToContents()
+
+        # add result to map canvas.
+
+    def handle_switch_region(self):
+        sel_region_dlg = SelectRegionDlg(prevRegionName=self.selected_region_name, parent=self.search_widget)
+        sel_region_dlg.setModal(True)
+        sel_region_dlg.show()
+        if sel_region_dlg.exec() != QDialog.Accepted:
+            return
+
+        self.selected_region_name = sel_region_dlg.get_selected_region()
+        self.search_form.btnRegion.setText(self.selected_region_name)
+
+        # save region to QgsSettings
+        g_setting = QgsSettings()
+        g_setting.setValue(self.__key_tag, self.selected_region_name)

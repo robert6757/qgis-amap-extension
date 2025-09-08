@@ -30,6 +30,19 @@
     <property name="spacing">
      <number>3</number>
     </property>
+    <item row="1" column="0" colspan="4">
+     <widget class="QTableWidget" name="tableWidget">
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLineEdit" name="lineEditKey"/>
+    </item>
     <item row="0" column="1">
      <widget class="QPushButton" name="btnSearch">
       <property name="text">
@@ -39,27 +52,27 @@
        <bool>false</bool>
       </property>
       <property name="default">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QLineEdit" name="lineEditKey"/>
-    </item>
-    <item row="0" column="2">
+    <item row="0" column="3">
      <widget class="QPushButton" name="btnRegion">
       <property name="text">
        <string>Nationwide</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="0" colspan="3">
-     <widget class="QTableWidget" name="tableWidget">
-      <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
+    <item row="0" column="2">
+     <widget class="QPushButton" name="btnClear">
+      <property name="text">
+       <string/>
       </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
+      <property name="autoDefault">
+       <bool>false</bool>
+      </property>
+      <property name="default">
+       <bool>false</bool>
       </property>
      </widget>
     </item>

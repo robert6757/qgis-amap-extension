@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 from qgis.PyQt import uic
-from qgis.core import QgsSettings, QgsNetworkAccessManager
+from qgis.core import QgsSettings, QgsNetworkAccessManager, QgsProject, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsPointXY
 from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery
 from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
@@ -29,6 +29,7 @@ from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
 from ..action_handler import ActionHandler
 from .select_region_dlg import SelectRegionDlg
 from ..global_helper import GlobalHelper
+from .canvas_dot_item import CanvasDotItem
 
 import os
 import json
@@ -40,10 +41,14 @@ class SearchHandler(ActionHandler):
         self.search_widget = None
         self.search_form = None
         self.selected_region_name = None
+        self.location_dot = None
 
         self.__key_tag = "qgis-amap-extension/search/region"
 
         self.network_manager = QgsNetworkAccessManager.instance()
+
+        self.__poi_longitude_item_role = 300
+        self.__poi_latitude_item_role = 301
 
     def attach(self, iface):
         """attach qgis python interface."""
@@ -78,7 +83,9 @@ class SearchHandler(ActionHandler):
 
         self.search_form.btnRegion.clicked.connect(self.handle_switch_region)
         self.search_form.btnSearch.clicked.connect(self.handle_search)
+        self.search_form.btnClear.clicked.connect(self.handle_clear)
         self.search_form.lineEditKey.returnPressed.connect(self.handle_search)
+        self.search_form.tableWidget.cellDoubleClicked.connect(self.handle_double_click_table_item)
 
         # show dock widget
         self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.search_widget)
@@ -95,6 +102,9 @@ class SearchHandler(ActionHandler):
         # clear result list
         while self.search_form.tableWidget.rowCount() > 0:
             self.search_form.tableWidget.removeRow(0)
+
+        if len(self.search_form.lineEditKey.text()) == 0:
+            return
 
         # url = f"https://restapi.amap.com/v5/place/text?key=e7f1bd64ec16414f947f2c508e511c40&keywords=尖沙咀&region=香港特别行政区"
         url = QUrl("https://restapi.amap.com/v5/place/text")
@@ -134,10 +144,21 @@ class SearchHandler(ActionHandler):
             address_item = QTableWidgetItem(poi_item["address"])
             self.search_form.tableWidget.setItem(row_i, 2, address_item)
 
+            # location is stored in Name item.
+            location = poi_item["location"].split(',')
+            name_item.setData(self.__poi_longitude_item_role, location[0])
+            name_item.setData(self.__poi_latitude_item_role, location[1])
+
             row_i += 1
         self.search_form.tableWidget.resizeColumnsToContents()
 
-        # add result to map canvas.
+    def handle_clear(self):
+        if self.location_dot is not None:
+            self.location_dot.clear()
+
+        map_canvas = self.iface.mapCanvas()
+        if map_canvas is not None:
+            map_canvas.refresh()
 
     def handle_switch_region(self):
         sel_region_dlg = SelectRegionDlg(prevRegionName=self.selected_region_name, parent=self.search_widget)
@@ -152,3 +173,37 @@ class SearchHandler(ActionHandler):
         # save region to QgsSettings
         g_setting = QgsSettings()
         g_setting.setValue(self.__key_tag, self.selected_region_name)
+
+    def handle_double_click_table_item(self, row, column):
+        # retrieve location from Name item.
+        name_table_item = self.search_form.tableWidget.item(row, 0)
+        longitude = float(name_table_item.data(self.__poi_longitude_item_role))
+        latitude = float(name_table_item.data(self.__poi_latitude_item_role))
+
+        # transform position
+        current_project_crs = QgsProject.instance().crs()
+        coord_trans = QgsCoordinateTransform(
+            QgsCoordinateReferenceSystem("EPSG:4326"),
+            current_project_crs,
+            QgsProject.instance(),
+        )
+
+        position_in_current_proj = coord_trans.transform(QgsPointXY(longitude, latitude))
+
+        # draw dot to canvas
+        map_canvas = self.iface.mapCanvas()
+        if map_canvas is None:
+            return
+
+        if self.location_dot is None:
+            # create a blinking dot
+            self.location_dot = CanvasDotItem(map_canvas)
+        self.location_dot.set_location(position_in_current_proj)
+        map_canvas.refresh()
+
+        # pan to the location
+        map_canvas.setCenter(position_in_current_proj)
+
+
+
+

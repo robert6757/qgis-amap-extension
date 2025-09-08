@@ -22,6 +22,7 @@
 """
 
 from abc import ABC, abstractmethod
+from .global_helper import GlobalHelper
 
 class ActionHandler(ABC):
     @abstractmethod
@@ -38,3 +39,5 @@ class ActionHandler(ABC):
     def unload(self):
         """unload this action handler"""
         pass
+
+

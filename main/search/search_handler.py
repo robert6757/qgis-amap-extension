@@ -30,6 +30,7 @@ from ..action_handler import ActionHandler
 from .select_region_dlg import SelectRegionDlg
 from ..global_helper import GlobalHelper
 from .canvas_dot_item import CanvasDotItem
+from ..access_key_checker import check_access_key
 
 import os
 import json
@@ -98,6 +99,13 @@ class SearchHandler(ActionHandler):
             self.search_widget = None
             self.search_form = None
 
+        if self.location_dot is not None:
+            self.location_dot.clear()
+        map_canvas = self.iface.mapCanvas()
+        if map_canvas is not None:
+            map_canvas.refresh()
+
+    @check_access_key
     def handle_search(self):
         # clear result list
         while self.search_form.tableWidget.rowCount() > 0:
@@ -153,9 +161,18 @@ class SearchHandler(ActionHandler):
         self.search_form.tableWidget.resizeColumnsToContents()
 
     def handle_clear(self):
+        # clear dot on map.
         if self.location_dot is not None:
             self.location_dot.clear()
 
+        # clear result table.
+        while self.search_form.tableWidget.rowCount() > 0:
+            self.search_form.tableWidget.removeRow(0)
+
+        # clear key input.
+        self.search_form.lineEditKey.setText("")
+
+        # refresh map canvas.
         map_canvas = self.iface.mapCanvas()
         if map_canvas is not None:
             map_canvas.refresh()

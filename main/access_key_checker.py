@@ -2,10 +2,10 @@
 """
 /***************************************************************************
  AMapExtension
-                                 CanvasDotItem
- provide a red dot drawing on the QGIS map canvas.
+                                 Access Key Checker
+ Check the AMap access key and show the options dialog.
                               -------------------
-        begin                : 2025-09-06
+        begin                : 2025-09-04
         copyright            : (C) 2025 by phoenix-gis
         email                : phoenixgis@sina.com
         website              : phoenix-gis.cn
@@ -21,30 +21,29 @@
  ***************************************************************************/
 """
 
-from qgis.gui import QgsMapCanvasItem
-from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QColor
+from functools import wraps
 
-class CanvasDotItem(QgsMapCanvasItem):
-    def __init__(self, canvas):
-        super().__init__(canvas)
-        self.canvas = canvas
-        self.radius = 10
+from .global_helper import GlobalHelper
+from .options.options_dlg import OptionsDlg
 
-    def set_location(self, location):
-        self.location = location
+def check_access_key(func):
+    @wraps(func)
+    def wrapper(params):
+        access_key = GlobalHelper.get_access_key()
+        if not access_key:
+            # show options dialog.
+            options_dlg = OptionsDlg()
+            options_dlg.setModal(True)
+            options_dlg.show()
+            options_dlg.exec()
 
-    def clear(self):
-        self.location = None
+        # check access again.
+        access_key = GlobalHelper.get_access_key()
+        if not access_key:
+            return False
 
-    def paint(self, painter, option, widget):
-        if self.location is None:
-            return
+        # execute decorated function.
+        return func(params)
 
-        # convert from coordinates to canvas position.
-        point = self.toCanvasCoordinates(self.location)
+    return wrapper
 
-        # draw yellow point
-        painter.setBrush(QColor(255, 255, 0))
-        painter.setPen(Qt.NoPen)
-        painter.drawEllipse(point, self.radius, self.radius)

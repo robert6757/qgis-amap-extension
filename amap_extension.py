@@ -76,6 +76,7 @@ class AMapExtension:
         self.basemap_handler = ActionHandlerFactory.create_basemap_handler(self.iface)
         self.options_handler = ActionHandlerFactory.create_options_handler(self.iface)
         self.search_handler = ActionHandlerFactory.create_search_handler(self.iface)
+        self.navigation_handler = ActionHandlerFactory.create_navigation_handler(self.iface)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -101,9 +102,9 @@ class AMapExtension:
         add_to_menu=True,
         parent_menu=None,
         add_to_toolbar=True,
-        parent_toolbar_button=None,
         status_tip=None,
         whats_this=None,
+        check_access_key=False,
         parent=None):
         """Add a toolbar icon to the toolbar.
 
@@ -173,7 +174,6 @@ class AMapExtension:
 
         return action
 
-
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
         self.init_gui_menu()
@@ -202,7 +202,7 @@ class AMapExtension:
         self.add_action(
             icon_path,
             text=self.tr(u'Navigate'),
-            callback=self.handle_navigate,
+            callback=lambda: self.navigation_handler.handle_action(""),
             add_to_toolbar=False,
             add_to_menu=True,
             parent=self.iface.mainWindow())
@@ -278,7 +278,7 @@ class AMapExtension:
         self.add_action(
             icon_path,
             text=self.tr(u'Navigate'),
-            callback=self.handle_navigate,
+            callback=lambda: self.navigation_handler.handle_action(""),
             add_to_toolbar=True,
             add_to_menu=False,
             parent=self.iface.mainWindow())
@@ -332,6 +332,7 @@ class AMapExtension:
         self.basemap_handler.unload()
         self.options_handler.unload()
         self.search_handler.unload()
+        self.navigation_handler.unload()
 
     def handle_navigate(self):
         pass

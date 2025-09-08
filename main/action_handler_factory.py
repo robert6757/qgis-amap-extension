@@ -24,6 +24,7 @@
 from .basemap.basemap_handler import BasemapHandler
 from .options.options_handler import OptionsHandler
 from .search.search_handler import SearchHandler
+from .navigation.navigation_handler import NavigationHandler
 
 class ActionHandlerFactory:
 
@@ -45,5 +46,11 @@ class ActionHandlerFactory:
     @staticmethod
     def create_search_handler(iface):
         handler = SearchHandler()
+        handler.attach(iface)
+        return handler
+
+    @staticmethod
+    def create_navigation_handler(iface):
+        handler = NavigationHandler()
         handler.attach(iface)
         return handler

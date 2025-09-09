@@ -10,7 +10,7 @@ version=0.1
 author=phoenix-gis
 email=phoenixgis@sina.com
 
-about=This plugin utilizes the AMap (GaoDe Map) online service to provide navigation, POI queries, and district search.
+about=本插件使用高德地图在线服务，提供导航、POI查询、行政区查询等功能。
 
 tracker=https://www.phoenix-gis.cn
 repository=https://github.com/robert6757/qgis-amap-extension

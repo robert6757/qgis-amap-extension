@@ -68,7 +68,7 @@ class AMapExtension:
         # Declare instance attributes
         self.actions = []
         # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'AMapExtension')
+        self.toolbar = self.iface.addToolBar(GlobalHelper.tr(u'AMapExtension'))
         self.toolbar.setObjectName(u'AMapExtension')
 
         #print "** INITIALIZING AMapExtension"

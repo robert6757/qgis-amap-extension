@@ -37,12 +37,12 @@
         <translation>选择图层</translation>
     </message>
     <message>
-        <location filename="../main/navigation/navigation_handler.py" line="291"/>
+        <location filename="../main/navigation/navigation_handler.py" line="294"/>
         <source>AMap Navigation Error</source>
         <translation>高德导航错误信息</translation>
     </message>
     <message>
-        <location filename="../main/navigation/navigation_handler.py" line="291"/>
+        <location filename="../main/navigation/navigation_handler.py" line="294"/>
         <source>Fail to parse navigation results responding from AMap server.</source>
         <translation>无法解析从高德导航服务返回的导航结果。</translation>
     </message>
@@ -62,17 +62,17 @@
         <translation>无法解析从高德服务返回的POI结果。</translation>
     </message>
     <message>
-        <location filename="../main/navigation/navigation_handler.py" line="327"/>
+        <location filename="../main/navigation/navigation_handler.py" line="330"/>
         <source>Driving</source>
         <translation>驾车</translation>
     </message>
     <message>
-        <location filename="../main/navigation/navigation_handler.py" line="267"/>
+        <location filename="../main/navigation/navigation_handler.py" line="270"/>
         <source>Walking</source>
         <translation>步行</translation>
     </message>
     <message>
-        <location filename="../main/navigation/navigation_handler.py" line="269"/>
+        <location filename="../main/navigation/navigation_handler.py" line="272"/>
         <source>Bicycling</source>
         <translation>骑行</translation>
     </message>
@@ -87,12 +87,12 @@
         <translation>选择位置</translation>
     </message>
     <message>
-        <location filename="../main/navigation/navigation_handler.py" line="257"/>
+        <location filename="../main/navigation/navigation_handler.py" line="260"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../main/navigation/navigation_handler.py" line="257"/>
+        <location filename="../main/navigation/navigation_handler.py" line="260"/>
         <source>Please select origin and destination on the map.</source>
         <translation>请在地图上选择起点和终点。</translation>
     </message>
@@ -115,6 +115,36 @@
         <location filename="../main/search/search_handler.py" line="123"/>
         <source>Nationwide</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../amap_extension.py" line="71"/>
+        <source>AMapExtension</source>
+        <translation>高德地图插件</translation>
+    </message>
+    <message>
+        <location filename="../amap_extension.py" line="313"/>
+        <source>AMap Extension</source>
+        <translation>高德地图插件</translation>
+    </message>
+    <message>
+        <location filename="../amap_extension.py" line="250"/>
+        <source>Add Layer</source>
+        <translation>添加图层</translation>
+    </message>
+    <message>
+        <location filename="../amap_extension.py" line="257"/>
+        <source>Search</source>
+        <translation>搜索</translation>
+    </message>
+    <message>
+        <location filename="../amap_extension.py" line="266"/>
+        <source>Navigate</source>
+        <translation>导航</translation>
+    </message>
+    <message>
+        <location filename="../amap_extension.py" line="284"/>
+        <source>Options</source>
+        <translation>设置</translation>
     </message>
 </context>
 <context>
@@ -252,17 +282,17 @@
 <context>
     <name>SelectRegionDlg</name>
     <message>
-        <location filename="../main/search/select_region_dlg.py" line="71"/>
+        <location filename="../main/search/select_region_dlg.py" line="75"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../main/search/select_region_dlg.py" line="71"/>
+        <location filename="../main/search/select_region_dlg.py" line="75"/>
         <source>Please select a region.</source>
         <translation>请选择一个区域</translation>
     </message>
     <message>
-        <location filename="../main/search/select_region_dlg.py" line="79"/>
+        <location filename="../main/search/select_region_dlg.py" line="83"/>
         <source>Nationwide</source>
         <translation>全国范围</translation>
     </message>

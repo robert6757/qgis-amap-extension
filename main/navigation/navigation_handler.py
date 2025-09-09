@@ -24,7 +24,7 @@
 from qgis.PyQt import uic
 from qgis.core import QgsNetworkAccessManager, QgsProject, QgsCoordinateTransform
 from qgis.core import QgsVectorLayer, QgsFields, QgsCoordinateReferenceSystem, QgsField, QgsFeature, QgsGeometry, QgsPointXY
-from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery, QVariant
+from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery, QVariant, QObject
 from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtWidgets import QMessageBox, QTableWidgetItem, QPushButton
 from qgis.gui import QgsMapToolEmitPoint
@@ -88,9 +88,9 @@ class NavigationHandler(ActionHandler):
         self.navigation_form = generated_class()
         self.navigation_form.setupUi(self.navigation_widget)
 
-        self.navigation_form.cbTransportationType.addItem(self.navigation_widget.tr(u"Driving"))
-        self.navigation_form.cbTransportationType.addItem(self.navigation_widget.tr(u"Walking"))
-        self.navigation_form.cbTransportationType.addItem(self.navigation_widget.tr(u"Bicycling"))
+        self.navigation_form.cbTransportationType.addItem(GlobalHelper.tr(u"Driving"))
+        self.navigation_form.cbTransportationType.addItem(GlobalHelper.tr(u"Walking"))
+        self.navigation_form.cbTransportationType.addItem(GlobalHelper.tr(u"Bicycling"))
 
         self.navigation_form.btnSelOrigin.clicked.connect(self.handle_clicked_origin_btn)
         self.navigation_form.btnSelDestination.clicked.connect(self.handle_clicked_destination_btn)
@@ -183,20 +183,23 @@ class NavigationHandler(ActionHandler):
         row_index = self.navigation_form.tableWidgetWaypoints.rowCount()
         self.navigation_form.tableWidgetWaypoints.setRowCount(row_index+1)
 
-        waypoint_item = QTableWidgetItem(self.navigation_widget.tr("waypoint") + "_" + str(self.waypoint_index))
+        waypoint_item = QTableWidgetItem(GlobalHelper.tr("waypoint") + "_" + str(self.waypoint_index))
         waypoint_item.setData(self.__waypoints_id_item_role, self.waypoint_index)
         self.navigation_form.tableWidgetWaypoints.setItem(row_index, 0, waypoint_item)
 
-        locate_btn = QPushButton(self.navigation_widget.tr("Pin"))
+        locate_btn = QPushButton(GlobalHelper.tr("Pin"))
         locate_btn.clicked.connect(lambda : self.handle_locate_waypoint(waypoint_item))
         self.navigation_form.tableWidgetWaypoints.setCellWidget(row_index, 1, locate_btn)
 
         self.waypoint_index += 1
 
     def handle_delete_waypoint(self):
-        current_waypoint_item = self.navigation_form.tableWidgetWaypoints.currentItem()
-        if current_waypoint_item is None:
+        selected_waypoint_items = self.navigation_form.tableWidgetWaypoints.selectedItems()
+        if len(selected_waypoint_items) == 0:
             return
+
+        # find the waypoint widget item.
+        current_waypoint_item = self.navigation_form.tableWidgetWaypoints.item(selected_waypoint_items[0].row(), 0)
 
         # remove pin from map
         waypoint_id = current_waypoint_item.data(self.__waypoints_id_item_role)
@@ -255,18 +258,18 @@ class NavigationHandler(ActionHandler):
     def handle_clicked_navigate_btn(self):
         if self.origin_location is None or self.destination_location is None:
             QMessageBox.information(self.navigation_widget,
-                                    self.navigation_widget.tr(u"Warning"),
-                                    self.navigation_widget.tr(u"Please select origin and destination on the map."),QMessageBox.Ok)
+                                    GlobalHelper.tr(u"Warning"),
+                                    GlobalHelper.tr(u"Please select origin and destination on the map."),QMessageBox.Ok)
             return;
 
         transportation_type = self.navigation_form.cbTransportationType.currentText()
 
         # build request params
-        if transportation_type == "Driving":
+        if transportation_type == GlobalHelper.tr("Driving"):
             url = QUrl("https://restapi.amap.com/v5/direction/driving")
-        elif transportation_type == "Walking":
+        elif transportation_type == GlobalHelper.tr("Walking"):
             url = QUrl("https://restapi.amap.com/v5/direction/walking")
-        elif transportation_type == "Bicycling":
+        elif transportation_type == GlobalHelper.tr("Bicycling"):
             url = QUrl("https://restapi.amap.com/v5/direction/bicycling")
         url_query = QUrlQuery()
         url_query.addQueryItem("key", GlobalHelper.get_access_key())
@@ -289,14 +292,14 @@ class NavigationHandler(ActionHandler):
             ##############################################
         except json.decoder.JSONDecodeError:
             self.iface.messageBar().pushWarning(
-                GlobalHelper.tr(u"GlobalHelper", u"AMap Navigation Error"),
-                GlobalHelper.tr(u"GlobalHelper", u"Fail to parse navigation results responding from AMap server.")
+                GlobalHelper.tr(u"AMap Navigation Error"),
+                GlobalHelper.tr(u"Fail to parse navigation results responding from AMap server.")
             )
 
         if int(reply_json['status']) != 1:
             QMessageBox.information(self.navigation_form,
-                                    GlobalHelper.tr(u"GlobalHelper",u"AMap Search Error"),
-                                    GlobalHelper.tr(u"GlobalHelper",u"Your request to AMap server is unavailable."),QMessageBox.Ok)
+                                    GlobalHelper.tr(u"AMap Search Error"),
+                                    GlobalHelper.tr(u"Your request to AMap server is unavailable."),QMessageBox.Ok)
             return
 
         reply_route = reply_json["route"]
@@ -324,7 +327,7 @@ class NavigationHandler(ActionHandler):
 
     def handle_transportation_changed(self, transportation):
         waypoint_enable = False
-        if transportation == self.navigation_widget.tr(u"Driving"):
+        if transportation == GlobalHelper.tr(u"Driving"):
             waypoint_enable = True
 
         self.navigation_form.tableWidgetWaypoints.setEnabled(waypoint_enable)

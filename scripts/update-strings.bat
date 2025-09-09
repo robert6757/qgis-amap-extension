@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 set "UI_DIR=%~dp0../ui"
 set "PYTHON_DIR=%~dp0../main"
-set "OUTPUT_TS=%~dp0../i18n/ChineseBasemap_zh-Hans.ts"
+set "OUTPUT_TS=%~dp0../i18n/AMapExtension_zh-Hans.ts"
 
 :: find all ui files.
 set "UI_FILES="

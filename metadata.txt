@@ -23,7 +23,7 @@ hasProcessingProvider=no
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=navigation, basemap, search
+tags=navigation,basemap,search,poi
 
 homepage=https://www.phoenix-gis.cn
 category=Plugins

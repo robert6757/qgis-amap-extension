@@ -42,8 +42,12 @@ class SelectRegionDlg(QDialog, FORM_CLASS):
 
         self.init_tree()
 
-        self.selected_region_name = prevRegionName
-        self.locate_node(prevRegionName)
+        if prevRegionName is None:
+            self.selected_region_name = self.tr(u"Nationwide")
+        else:
+            # use previous region name.
+            self.selected_region_name = prevRegionName
+            self.locate_node(prevRegionName)
 
     def init_tree(self):
         self.treeWidget.header().setSectionResizeMode(QHeaderView.ResizeToContents)

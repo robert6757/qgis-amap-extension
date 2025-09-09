@@ -25,11 +25,10 @@ from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton
 
-# Import the code for the DockWidget
-from .amap_extension_dockwidget import AMapExtensionDockWidget
 import os.path
 
 from .main.action_handler_factory import ActionHandlerFactory
+from .main.global_helper import GlobalHelper
 
 # Initialize Qt resources from file resources_rc.py
 # Extend to load root directory.
@@ -55,7 +54,7 @@ class AMapExtension:
         self.plugin_dir = os.path.dirname(__file__)
 
         # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
+        locale = QSettings().value('locale/userLocale')
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
@@ -81,21 +80,6 @@ class AMapExtension:
         self.options_handler = ActionHandlerFactory.create_options_handler(self.iface)
         self.search_handler = ActionHandlerFactory.create_search_handler(self.iface)
         self.navigation_handler = ActionHandlerFactory.create_navigation_handler(self.iface)
-
-    # noinspection PyMethodMayBeStatic
-    def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
-        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('AMapExtension', message)
 
     def add_action(
         self,
@@ -169,7 +153,7 @@ class AMapExtension:
         if add_to_menu:
             if parent_menu is None:
                 self.iface.addPluginToMenu(
-                    self.tr(u"AMap Extension"),
+                    GlobalHelper.tr(u"AMap Extension"),
                     action)
             else:
                 parent_menu.addAction(action)
@@ -184,28 +168,28 @@ class AMapExtension:
         self.init_gui_toolbar()
 
     def init_gui_menu(self):
-        icon_path = ':/plugins/amap_extension/icon.png'
+        icon_path = ':/plugins/amap_extension/image/addlayer.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Add Layer'),
-            callback=lambda: self.basemap_handler.handle_action("Select Layer"),
+            text=GlobalHelper.tr(u'Add Layer'),
+            callback=lambda: self.basemap_handler.handle_action(GlobalHelper.tr("Select Layer")),
             add_to_toolbar=False,
             add_to_menu=True,
             parent=self.iface.mainWindow())
 
-        icon_path = ':/plugins/amap_extension/icon.png'
+        icon_path = ':/plugins/amap_extension/image/searchpoi.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Search'),
+            text=GlobalHelper.tr(u'Search'),
             callback=lambda: self.search_handler.handle_action(""),
             add_to_toolbar=False,
             add_to_menu=True,
             parent=self.iface.mainWindow())
 
-        icon_path = ':/plugins/amap_extension/icon.png'
+        icon_path = ':/plugins/amap_extension/image/navigate.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Navigate'),
+            text=GlobalHelper.tr(u'Navigate'),
             callback=lambda: self.navigation_handler.handle_action(""),
             add_to_toolbar=False,
             add_to_menu=True,
@@ -214,16 +198,16 @@ class AMapExtension:
         # icon_path = ':/plugins/amap_extension/icon.png'
         # self.add_action(
         #     icon_path,
-        #     text=self.tr(u'Convert Coordinate'),
+        #     text=GlobalHelper.tr(u'Convert Coordinate'),
         #     callback=self.handle_convert_coordinate,
         #     add_to_toolbar=False,
         #     add_to_menu=True,
         #     parent=self.iface.mainWindow())
 
-        icon_path = ':/plugins/amap_extension/icon.png'
+        icon_path = ':/plugins/amap_extension/image/options.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Options'),
+            text=GlobalHelper.tr(u'Options'),
             callback=lambda: self.options_handler.handle_action(params=None),
             add_to_toolbar=False,
             add_to_menu=True,
@@ -231,57 +215,57 @@ class AMapExtension:
 
     def init_gui_toolbar(self):
 
-        add_layer_menu = QMenu(self.tr(u"Add Layer"))
+        add_layer_menu = QMenu(GlobalHelper.tr(u"Add Layer"))
 
-        icon_path = ':/plugins/amap_extension/icon.png'
         self.add_action(
-            icon_path,
-            text=self.tr(u'Satellite Layer'),
-            callback=lambda: self.basemap_handler.handle_action("Satellite Layer"),
+            "",
+            text=GlobalHelper.tr(u'Satellite Layer'),
+            callback=lambda: self.basemap_handler.handle_action(GlobalHelper.tr("Satellite Layer")),
             add_to_toolbar=True,
             add_to_menu=False,
             parent_menu=add_layer_menu,
             parent=self.iface.mainWindow())
         self.add_action(
-            icon_path,
-            text=self.tr(u'Satellite Label Layer'),
-            callback=lambda: self.basemap_handler.handle_action("Satellite Label Layer"),
+            "",
+            text=GlobalHelper.tr(u'Satellite Label Layer'),
+            callback=lambda: self.basemap_handler.handle_action(GlobalHelper.tr("Satellite Label Layer")),
             add_to_toolbar=True,
             add_to_menu=False,
             parent_menu=add_layer_menu,
             parent=self.iface.mainWindow())
         self.add_action(
-            icon_path,
-            text=self.tr(u'Vector Layer'),
-            callback=lambda: self.basemap_handler.handle_action("Vector Layer"),
+            "",
+            text=GlobalHelper.tr(u'Vector Layer'),
+            callback=lambda: self.basemap_handler.handle_action(GlobalHelper.tr("Vector Layer")),
             add_to_toolbar=True,
             add_to_menu=False,
             parent_menu=add_layer_menu,
             parent=self.iface.mainWindow())
 
+        icon_path = ':/plugins/amap_extension/image/addlayer.png'
         add_layer_toolbutton = QToolButton()
         add_layer_toolbutton.setToolButtonStyle(Qt.ToolButtonIconOnly)
-        add_layer_toolbutton.setToolTip(self.tr('Add Layer'))
+        add_layer_toolbutton.setToolTip(GlobalHelper.tr('Add Layer'))
         add_layer_toolbutton.setPopupMode(QToolButton.MenuButtonPopup)
-        add_layer_toolbutton.setText(self.tr('Add Layer'))
+        add_layer_toolbutton.setText(GlobalHelper.tr('Add Layer'))
         add_layer_toolbutton.setIcon(QIcon(icon_path))
 
         add_layer_toolbutton.setMenu(add_layer_menu)
         self.toolbar.addWidget(add_layer_toolbutton)
 
-        icon_path = ':/plugins/amap_extension/icon.png'
+        icon_path = ':/plugins/amap_extension/image/searchpoi.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Search'),
+            text=GlobalHelper.tr(u'Search'),
             callback=lambda: self.search_handler.handle_action(""),
             add_to_toolbar=True,
             add_to_menu=False,
             parent=self.iface.mainWindow())
 
-        icon_path = ':/plugins/amap_extension/icon.png'
+        icon_path = ':/plugins/amap_extension/image/navigate.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Navigate'),
+            text=GlobalHelper.tr(u'Navigate'),
             callback=lambda: self.navigation_handler.handle_action(""),
             add_to_toolbar=True,
             add_to_menu=False,
@@ -290,16 +274,16 @@ class AMapExtension:
         # icon_path = ':/plugins/amap_extension/icon.png'
         # self.add_action(
         #     icon_path,
-        #     text=self.tr(u'Convert Coordinate'),
+        #     text=GlobalHelper.tr(u'Convert Coordinate'),
         #     callback=self.handle_convert_coordinate,
         #     add_to_toolbar=True,
         #     add_to_menu=False,
         #     parent=self.iface.mainWindow())
 
-        icon_path = ':/plugins/amap_extension/icon.png'
+        icon_path = ':/plugins/amap_extension/image/options.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Options'),
+            text=GlobalHelper.tr(u'Options'),
             callback=lambda: self.options_handler.handle_action(params=None),
             add_to_toolbar=True,
             add_to_menu=False,
@@ -327,7 +311,7 @@ class AMapExtension:
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'AMap Extension'),
+                GlobalHelper.tr(u'AMap Extension'),
                 action)
             self.iface.removeToolBarIcon(action)
         # remove the toolbar

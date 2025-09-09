@@ -22,7 +22,7 @@
 """
 from qgis.PyQt import uic
 from qgis.core import QgsSettings, QgsNetworkAccessManager, QgsProject, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsPointXY
-from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery
+from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery, QObject
 from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
 
@@ -76,7 +76,7 @@ class SearchHandler(ActionHandler):
         self.search_form.setupUi(self.search_widget)
 
         self.search_form.tableWidget.setColumnCount(3)
-        column_headers = [self.search_widget.tr("Name"), self.search_widget.tr("City"), self.search_widget.tr("Address")]
+        column_headers = [GlobalHelper.tr("Name"), GlobalHelper.tr("City"), GlobalHelper.tr("Address")]
         self.search_form.tableWidget.setHorizontalHeaderLabels(column_headers)
 
         if self.selected_region_name is not None:
@@ -120,7 +120,7 @@ class SearchHandler(ActionHandler):
         url_query.addQueryItem("page_size", '25')
         url_query.addQueryItem("key", GlobalHelper.get_access_key())
         url_query.addQueryItem("keywords", self.search_form.lineEditKey.text())
-        if self.selected_region_name is not None and self.selected_region_name != self.search_widget.tr(u"Nationwide"):
+        if self.selected_region_name is not None and self.selected_region_name != GlobalHelper.tr(u"Nationwide"):
             url_query.addQueryItem("region", self.selected_region_name)
         url.setQuery(url_query)
         request = QNetworkRequest(url)
@@ -131,14 +131,14 @@ class SearchHandler(ActionHandler):
             reply_json = json.loads(reply.content().data())
         except json.decoder.JSONDecodeError:
             self.iface.messageBar().pushWarning(
-                GlobalHelper.tr(u"GlobalHelper", u"AMap Search Error"),
-                GlobalHelper.tr(u"GlobalHelper", u"Fail to parse poi results responding from AMap server.")
+                GlobalHelper.tr(u"AMap Search Error"),
+                GlobalHelper.tr(u"Fail to parse poi results responding from AMap server.")
             )
 
         if int(reply_json['status']) != 1:
             QMessageBox.information(self.search_widget,
-                                    GlobalHelper.tr(u"GlobalHelper",u"AMap Search Error"),
-                                    GlobalHelper.tr(u"GlobalHelper",u"Your request to AMap server is unavailable."),QMessageBox.Ok)
+                                    GlobalHelper.tr(u"AMap Search Error"),
+                                    GlobalHelper.tr(u"Your request to AMap server is unavailable."),QMessageBox.Ok)
             return
 
         # add result to table widget.

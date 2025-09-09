@@ -23,14 +23,14 @@
 
 from qgis.PyQt import uic
 from qgis.core import QgsNetworkAccessManager, QgsProject, QgsCoordinateTransform
-from qgis.core import QgsVectorLayer, QgsFields, QgsVectorFileWriter, QgsCoordinateReferenceSystem, QgsField, QgsFeature, QgsGeometry, QgsPoint, QgsPointXY, QgsWkbTypes
+from qgis.core import QgsVectorLayer, QgsFields, QgsCoordinateReferenceSystem, QgsField, QgsFeature, QgsGeometry, QgsPointXY
 from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery, QVariant
 from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
-from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
+from qgis.PyQt.QtWidgets import QMessageBox, QTableWidgetItem, QPushButton
 from qgis.gui import QgsMapToolEmitPoint
 
-from ..action_handler import ActionHandler
 from ..global_helper import GlobalHelper
+from ..action_handler import ActionHandler
 from ..access_key_checker import *
 from .navigation_pin_item import NavigationPinItem
 
@@ -44,9 +44,8 @@ class NavigationHandler(ActionHandler):
         self.navigation_widget = None
         self.navigation_form = None
         self.origin_location = None
-        self.origin_pin = None
         self.destination_location = None
-        self.destination_pin = None
+        self.navigation_pin = None
 
         # supply to vector layer
         self.layer_name_index = 1
@@ -56,16 +55,24 @@ class NavigationHandler(ActionHandler):
         self.layer_fields.append(QgsField("instruction", QVariant.String))
         self.layer_fields.append(QgsField("step_distance", QVariant.Int))
 
+        # waypoints
+        self.waypoint_index = 1
+        self.locating_waypoint_item = None
+
         self.network_manager = QgsNetworkAccessManager.instance()
 
-        self.__waypoints_longitude_item_role = 300
-        self.__waypoints_latitude_item_role = 301
+        self.__waypoints_location_item_role = 300
+        self.__waypoints_id_item_role = 301
 
     def attach(self, iface):
         """attach qgis python interface."""
         self.iface = iface
 
     def handle_action(self, params):
+        canvas = self.iface.mapCanvas()
+        if canvas is not None:
+            self.navigation_pin = NavigationPinItem(canvas)
+
         if self.navigation_widget is not None:
             self.navigation_widget.show()
             return
@@ -89,6 +96,9 @@ class NavigationHandler(ActionHandler):
         self.navigation_form.btnSelDestination.clicked.connect(self.handle_clicked_destination_btn)
         self.navigation_form.btnNavigate.clicked.connect(self.handle_clicked_navigate_btn)
         self.navigation_form.btnClear.clicked.connect(self.handle_clicked_clear_btn)
+        self.navigation_form.btnAddWaypoints.clicked.connect(self.handle_add_waypoint)
+        self.navigation_form.btnRemoveWaypoints.clicked.connect(self.handle_delete_waypoint)
+        self.navigation_form.cbTransportationType.currentTextChanged.connect(self.handle_transportation_changed)
 
         # show dock widget
         self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.navigation_widget)
@@ -97,6 +107,8 @@ class NavigationHandler(ActionHandler):
         self.sel_origin_tool.canvasClicked.connect(self.handle_origin_tool_capture)
         self.sel_destination_tool = QgsMapToolEmitPoint(self.iface.mapCanvas())
         self.sel_destination_tool.canvasClicked.connect(self.handle_destination_tool_capture)
+        self.sel_waypoint_tool = QgsMapToolEmitPoint(self.iface.mapCanvas())
+        self.sel_waypoint_tool.canvasClicked.connect(self.handle_locate_waypoint_capture)
 
     def unload(self):
         """unload this action handler"""
@@ -108,10 +120,8 @@ class NavigationHandler(ActionHandler):
 
         self.origin_location = None
         self.destination_location = None
-        if self.destination_pin is not None:
-            self.destination_pin.clear()
-        if self.origin_pin is not None:
-            self.origin_pin.clear()
+        if self.navigation_pin is not None:
+            self.navigation_pin.clear()
 
         map_canvas = self.iface.mapCanvas()
         if not map_canvas:
@@ -121,14 +131,14 @@ class NavigationHandler(ActionHandler):
         canvas = self.iface.mapCanvas()
         if canvas is None:
             return
-        self.prev_maptool = canvas.mapTool()
+        canvas.mapTool()
         canvas.setMapTool(self.sel_origin_tool)
 
     def handle_clicked_destination_btn(self):
         canvas = self.iface.mapCanvas()
         if canvas is None:
             return
-        self.prev_maptool = canvas.mapTool()
+        canvas.mapTool()
         canvas.setMapTool(self.sel_destination_tool)
 
     def handle_origin_tool_capture(self, point):
@@ -142,10 +152,7 @@ class NavigationHandler(ActionHandler):
 
         # draw the origin dot
         map_canvas = self.iface.mapCanvas()
-        if self.origin_pin is None:
-            # create a blinking dot
-            self.origin_pin = NavigationPinItem(0, map_canvas)
-        self.origin_pin.set_location(point)
+        self.navigation_pin.set_location(point, 0)
         map_canvas.refresh()
 
         self.origin_location = coord_trans.transform(point)
@@ -164,10 +171,7 @@ class NavigationHandler(ActionHandler):
 
         # draw the origin dot
         map_canvas = self.iface.mapCanvas()
-        if self.destination_pin is None:
-            # create a blinking dot
-            self.destination_pin = NavigationPinItem(1, map_canvas)
-        self.destination_pin.set_location(point)
+        self.navigation_pin.set_location(point, 1)
         map_canvas.refresh()
 
         self.destination_location = coord_trans.transform(point)
@@ -175,14 +179,77 @@ class NavigationHandler(ActionHandler):
         # unset map tool
         map_canvas.unsetMapTool(self.sel_destination_tool)
 
+    def handle_add_waypoint(self):
+        row_index = self.navigation_form.tableWidgetWaypoints.rowCount()
+        self.navigation_form.tableWidgetWaypoints.setRowCount(row_index+1)
+
+        waypoint_item = QTableWidgetItem(self.navigation_widget.tr("waypoint") + "_" + str(self.waypoint_index))
+        waypoint_item.setData(self.__waypoints_id_item_role, self.waypoint_index)
+        self.navigation_form.tableWidgetWaypoints.setItem(row_index, 0, waypoint_item)
+
+        locate_btn = QPushButton(self.navigation_widget.tr("Pin"))
+        locate_btn.clicked.connect(lambda : self.handle_locate_waypoint(waypoint_item))
+        self.navigation_form.tableWidgetWaypoints.setCellWidget(row_index, 1, locate_btn)
+
+        self.waypoint_index += 1
+
+    def handle_delete_waypoint(self):
+        current_waypoint_item = self.navigation_form.tableWidgetWaypoints.currentItem()
+        if current_waypoint_item is None:
+            return
+
+        # remove pin from map
+        waypoint_id = current_waypoint_item.data(self.__waypoints_id_item_role)
+        self.navigation_pin.remove_waypoint_location(waypoint_id)
+        canvas = self.iface.mapCanvas()
+        if canvas is not None:
+            canvas.refresh()
+
+        self.navigation_form.tableWidgetWaypoints.removeRow(current_waypoint_item.row())
+
+    def handle_locate_waypoint(self, selected_item):
+        self.locating_waypoint_item = selected_item
+        canvas = self.iface.mapCanvas()
+        if canvas is None:
+            return
+        canvas.mapTool()
+        canvas.setMapTool(self.sel_waypoint_tool)
+
+    def handle_locate_waypoint_capture(self, point):
+        # convert to EPSG:4326
+        current_project_crs = QgsProject.instance().crs()
+        coord_trans = QgsCoordinateTransform(
+            current_project_crs,
+            QgsCoordinateReferenceSystem("EPSG:4326"),
+            QgsProject.instance(),
+        )
+
+        # draw the waypoint dot
+        waypoint_id = self.locating_waypoint_item.data(self.__waypoints_id_item_role)
+        map_canvas = self.iface.mapCanvas()
+        self.navigation_pin.set_waypoint_location(point, waypoint_id)
+        map_canvas.refresh()
+
+        waypoint_location = coord_trans.transform(point)
+
+        # save converted location to talbewidget item.
+        self.locating_waypoint_item.setData(self.__waypoints_location_item_role, waypoint_location)
+
+        # unset map tool
+        map_canvas.unsetMapTool(self.sel_waypoint_tool)
+
     def handle_clicked_clear_btn(self):
         self.origin_location = None
         self.destination_location = None
-        self.destination_pin.clear()
-        self.origin_pin.clear()
         map_canvas = self.iface.mapCanvas()
         if map_canvas is not None:
             map_canvas.refresh()
+
+        self.waypoint_index = 1
+        self.locating_waypoint_item = None
+        self.navigation_pin.clear()
+        while self.navigation_form.tableWidgetWaypoints.rowCount() > 0:
+            self.navigation_form.tableWidgetWaypoints.removeRow(0)
 
     @check_access_key
     def handle_clicked_navigate_btn(self):
@@ -206,6 +273,7 @@ class NavigationHandler(ActionHandler):
         url_query.addQueryItem("show_fields", "polyline")
         url_query.addQueryItem("origin", "{0},{1}".format(self.origin_location.x(), self.origin_location.y()))
         url_query.addQueryItem("destination", "{0},{1}".format(self.destination_location.x(), self.destination_location.y()))
+        url_query.addQueryItem("waypoints", self.__build_waypoint_url_query())
         url.setQuery(url_query)
         request = QNetworkRequest(url)
         reply = self.network_manager.blockingGet(request)
@@ -226,12 +294,10 @@ class NavigationHandler(ActionHandler):
             )
 
         if int(reply_json['status']) != 1:
-            QMessageBox.information(self.search_widget,
+            QMessageBox.information(self.navigation_form,
                                     GlobalHelper.tr(u"GlobalHelper",u"AMap Search Error"),
                                     GlobalHelper.tr(u"GlobalHelper",u"Your request to AMap server is unavailable."),QMessageBox.Ok)
             return
-
-
 
         reply_route = reply_json["route"]
         if not reply_route:
@@ -255,6 +321,20 @@ class NavigationHandler(ActionHandler):
 
             # add layer to map
             QgsProject.instance().addMapLayer(navi_vector_layer)
+
+    def handle_transportation_changed(self, transportation):
+        waypoint_enable = False
+        if transportation == self.navigation_widget.tr(u"Driving"):
+            waypoint_enable = True
+
+        self.navigation_form.tableWidgetWaypoints.setEnabled(waypoint_enable)
+        self.navigation_form.btnAddWaypoints.setEnabled(waypoint_enable)
+        self.navigation_form.btnRemoveWaypoints.setEnabled(waypoint_enable)
+        self.navigation_pin.set_waypoint_enabled(waypoint_enable)
+
+        canvas = self.iface.mapCanvas()
+        if canvas is not None:
+            canvas.refresh()
 
     def __create_route_layer(self, layer_name) -> QgsVectorLayer:
         # specific vector parameters.
@@ -316,3 +396,17 @@ class NavigationHandler(ActionHandler):
 
         layer.addFeature(feature)
 
+    def __build_waypoint_url_query(self) -> str:
+        if not self.navigation_form.tableWidgetWaypoints.isEnabled():
+            return ""
+
+        query_str = ""
+        row_count = self.navigation_form.tableWidgetWaypoints.rowCount()
+        for row_i in range(row_count):
+            waypoint_item = self.navigation_form.tableWidgetWaypoints.item(row_i, 0)
+            location = waypoint_item.data(self.__waypoints_location_item_role)
+            if location is None:
+                continue
+            query_str += "{0},{1};".format(location.x(), location.y())
+
+        return query_str

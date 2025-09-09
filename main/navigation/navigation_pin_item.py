@@ -26,33 +26,59 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor
 
 class NavigationPinItem(QgsMapCanvasItem):
-    def __init__(self, pin_type : int, canvas):
+    def __init__(self, canvas):
         super().__init__(canvas)
         self.canvas = canvas
-        self.location = None
         self.radius = 5
 
+        self.origin_pin_location = None
+        self.destination_pin_location = None
+        self.waypoint_enable = True
+
+        self.waypoint_pins = {}
+
+    def set_location(self, location, pin_type):
         # 0: origin pin
         # 1: destination pin
-        self.pin_type = pin_type
+        if pin_type == 0:
+            self.origin_pin_location = location
+        elif pin_type == 1:
+            self.destination_pin_location = location
 
-    def set_location(self, location):
-        self.location = location
+    def set_waypoint_location(self, location, waypoint_id):
+        self.waypoint_pins[waypoint_id] = location
+
+    def remove_waypoint_location(self, waypoint_id):
+        if waypoint_id not in self.waypoint_pins:
+            return
+        self.waypoint_pins.pop(waypoint_id)
+
+    def set_waypoint_enabled(self, enabled):
+        self.waypoint_enable = enabled
 
     def clear(self):
-        self.location = None
+        self.origin_pin_location = None
+        self.destination_pin_location = None
+        self.waypoint_pins = {}
 
     def paint(self, painter, option, widget):
-        if self.location is None:
-            return
-
-        # convert from coordinates to canvas position.
-        point = self.toCanvasCoordinates(self.location)
-
-        # draw pin with red or green.
-        if self.pin_type == 0:
+        if self.origin_pin_location is not None:
+            # convert from coordinates to canvas position.
+            point = self.toCanvasCoordinates(self.origin_pin_location)
             painter.setBrush(QColor(0, 255, 0))
-        else:
+            painter.drawEllipse(point, self.radius, self.radius)
+
+        if self.destination_pin_location is not None:
+            # convert from coordinates to canvas position.
+            point = self.toCanvasCoordinates(self.destination_pin_location)
             painter.setBrush(QColor(255, 0, 0))
-        painter.setPen(Qt.NoPen)
-        painter.drawEllipse(point, self.radius, self.radius)
+            painter.drawEllipse(point, self.radius, self.radius)
+
+        if self.waypoint_enable:
+            for waypoint_pin_index in self.waypoint_pins.keys():
+                # convert from coordinates to canvas position.
+                point = self.toCanvasCoordinates(self.waypoint_pins[waypoint_pin_index])
+                painter.setBrush(QColor(0, 255, 255))
+                painter.drawEllipse(point, self.radius, self.radius)
+
+

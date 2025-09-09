@@ -30,7 +30,7 @@ class NavigationPinItem(QgsMapCanvasItem):
         super().__init__(canvas)
         self.canvas = canvas
         self.location = None
-        self.radius = 10
+        self.radius = 5
 
         # 0: origin pin
         # 1: destination pin

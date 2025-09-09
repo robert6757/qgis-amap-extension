@@ -181,15 +181,15 @@ class NavigationHandler(ActionHandler):
         self.destination_pin.clear()
         self.origin_pin.clear()
         map_canvas = self.iface.mapCanvas()
-        if not map_canvas:
+        if map_canvas is not None:
             map_canvas.refresh()
 
     @check_access_key
     def handle_clicked_navigate_btn(self):
         if self.origin_location is None or self.destination_location is None:
-            QMessageBox.information(self.setting_widget,
-                                    self.tr(u"Warning"),
-                                    self.tr(u"Please select origin and destination on the map."),QMessageBox.Ok)
+            QMessageBox.information(self.navigation_widget,
+                                    self.navigation_widget.tr(u"Warning"),
+                                    self.navigation_widget.tr(u"Please select origin and destination on the map."),QMessageBox.Ok)
             return;
 
         transportation_type = self.navigation_form.cbTransportationType.currentText()
@@ -219,8 +219,6 @@ class NavigationHandler(ActionHandler):
             # with open('d:/output.txt', 'w', encoding='utf-8') as file:
             #     file.write(json.dumps(reply_json, indent=2, ensure_ascii=False))
             ##############################################
-
-
         except json.decoder.JSONDecodeError:
             self.iface.messageBar().pushWarning(
                 GlobalHelper.tr(u"GlobalHelper", u"AMap Navigation Error"),

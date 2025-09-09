@@ -24,14 +24,18 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton
-# Initialize Qt resources from file resources.py
-from .resources import *
 
 # Import the code for the DockWidget
 from .amap_extension_dockwidget import AMapExtensionDockWidget
 import os.path
 
 from .main.action_handler_factory import ActionHandlerFactory
+
+# Initialize Qt resources from file resources_rc.py
+# Extend to load root directory.
+import sys
+sys.path.append(os.path.dirname(__file__))
+from .resources_rc import *
 
 class AMapExtension:
     """QGIS Plugin Implementation."""
@@ -207,14 +211,14 @@ class AMapExtension:
             add_to_menu=True,
             parent=self.iface.mainWindow())
 
-        icon_path = ':/plugins/amap_extension/icon.png'
-        self.add_action(
-            icon_path,
-            text=self.tr(u'Convert Coordinate'),
-            callback=self.handle_convert_coordinate,
-            add_to_toolbar=False,
-            add_to_menu=True,
-            parent=self.iface.mainWindow())
+        # icon_path = ':/plugins/amap_extension/icon.png'
+        # self.add_action(
+        #     icon_path,
+        #     text=self.tr(u'Convert Coordinate'),
+        #     callback=self.handle_convert_coordinate,
+        #     add_to_toolbar=False,
+        #     add_to_menu=True,
+        #     parent=self.iface.mainWindow())
 
         icon_path = ':/plugins/amap_extension/icon.png'
         self.add_action(
@@ -283,14 +287,14 @@ class AMapExtension:
             add_to_menu=False,
             parent=self.iface.mainWindow())
 
-        icon_path = ':/plugins/amap_extension/icon.png'
-        self.add_action(
-            icon_path,
-            text=self.tr(u'Convert Coordinate'),
-            callback=self.handle_convert_coordinate,
-            add_to_toolbar=True,
-            add_to_menu=False,
-            parent=self.iface.mainWindow())
+        # icon_path = ':/plugins/amap_extension/icon.png'
+        # self.add_action(
+        #     icon_path,
+        #     text=self.tr(u'Convert Coordinate'),
+        #     callback=self.handle_convert_coordinate,
+        #     add_to_toolbar=True,
+        #     add_to_menu=False,
+        #     parent=self.iface.mainWindow())
 
         icon_path = ':/plugins/amap_extension/icon.png'
         self.add_action(

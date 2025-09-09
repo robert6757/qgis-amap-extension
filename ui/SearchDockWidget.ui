@@ -45,6 +45,9 @@
     </item>
     <item row="0" column="1">
      <widget class="QPushButton" name="btnSearch">
+      <property name="styleSheet">
+       <string notr="true">image: url(:/plugins/amap_extension/image/search.svg);</string>
+      </property>
       <property name="text">
        <string/>
       </property>
@@ -65,6 +68,9 @@
     </item>
     <item row="0" column="2">
      <widget class="QPushButton" name="btnClear">
+      <property name="styleSheet">
+       <string notr="true">image: url(:/plugins/amap_extension/image/clear-option.svg);</string>
+      </property>
       <property name="text">
        <string/>
       </property>
@@ -84,6 +90,8 @@
   <tabstop>btnSearch</tabstop>
   <tabstop>btnRegion</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

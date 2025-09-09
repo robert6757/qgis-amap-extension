@@ -29,7 +29,7 @@ class CanvasDotItem(QgsMapCanvasItem):
     def __init__(self, canvas):
         super().__init__(canvas)
         self.canvas = canvas
-        self.radius = 10
+        self.radius = 5
 
     def set_location(self, location):
         self.location = location

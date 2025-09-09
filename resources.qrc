@@ -1,5 +1,9 @@
 <RCC>
-    <qresource prefix="/plugins/amap_extension" >
-        <file>icon.png</file>
-    </qresource>
+  <qresource prefix="/plugins/amap_extension">
+    <file>image/add.svg</file>
+    <file>image/clear-option.svg</file>
+    <file>image/minus.svg</file>
+    <file>image/search.svg</file>
+    <file>icon.png</file>
+  </qresource>
 </RCC>

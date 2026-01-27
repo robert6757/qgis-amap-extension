@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-
+from PyQt5.QtCore import QMetaType
 from qgis.PyQt import uic
 from qgis.core import QgsNetworkAccessManager, QgsProject, QgsCoordinateTransform
 from qgis.core import QgsVectorLayer, QgsFields, QgsCoordinateReferenceSystem, QgsField, QgsFeature, QgsGeometry, QgsPointXY
@@ -50,10 +50,10 @@ class NavigationHandler(ActionHandler):
         # supply to vector layer
         self.layer_name_index = 1
         self.layer_fields = QgsFields()
-        self.layer_fields.append(QgsField("road_name", QVariant.String))
-        self.layer_fields.append(QgsField("orientation", QVariant.String))
-        self.layer_fields.append(QgsField("instruction", QVariant.String))
-        self.layer_fields.append(QgsField("step_distance", QVariant.Int))
+        self.layer_fields.append(QgsField("road_name", QMetaType.Type.QString))
+        self.layer_fields.append(QgsField("orientation", QMetaType.Type.QString))
+        self.layer_fields.append(QgsField("instruction", QMetaType.Type.QString))
+        self.layer_fields.append(QgsField("step_distance", QMetaType.Type.Int))
 
         # waypoints
         self.waypoint_index = 1

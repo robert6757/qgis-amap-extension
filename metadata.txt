@@ -6,7 +6,7 @@
 name=AMap Extension
 qgisMinimumVersion=3.0
 description=This plugin utilizes the AMap (GaoDe Map/高德地图) online service to provide navigation, POI queries, and district search.
-version=0.1
+version=0.2
 author=phoenix-gis
 email=phoenixgis@sina.com
 
@@ -20,12 +20,15 @@ repository=https://github.com/robert6757/qgis-amap-extension
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-# changelog=
+changelog=Version 0.2 2026-01-27
+    * Bug fix.
+    Version 0.1 2025-09-10
+    * First version.
 
 # Tags are comma separated with spaces allowed
 tags=navigation,basemap,search,poi
 
-homepage=https://www.phoenix-gis.cn
+homepage=https://www.phoenix-gis.cn/d/233-gao-de-dao-hang-qgischa-jian-zheng-shi-shang-xian-liao
 category=Plugins
 icon=icon.png
 # experimental flag

@@ -21,20 +21,25 @@
  *                                                                         *
  ***************************************************************************/
 """
+import os.path
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton
 
-import os.path
-
-from .main.action_handler_factory import ActionHandlerFactory
-from .main.global_helper import GlobalHelper
+from .main.compat import *
 
 # Initialize Qt resources from file resources_rc.py
 # Extend to load root directory.
 import sys
 sys.path.append(os.path.dirname(__file__))
-from .resources_rc import *
+
+if IS_QT5:
+    from .resources_rc import *
+if IS_QT6:
+    from .resources_rc_qt6 import *
+
+from .main.action_handler_factory import ActionHandlerFactory
+from .main.global_helper import GlobalHelper
 
 class AMapExtension:
     """QGIS Plugin Implementation."""
@@ -245,9 +250,9 @@ class AMapExtension:
 
         icon_path = ':/plugins/amap_extension/image/addlayer.png'
         add_layer_toolbutton = QToolButton()
-        add_layer_toolbutton.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        add_layer_toolbutton.setToolButtonStyle(ToolButtonIconOnly)
         add_layer_toolbutton.setToolTip(GlobalHelper.tr('Add Layer'))
-        add_layer_toolbutton.setPopupMode(QToolButton.MenuButtonPopup)
+        add_layer_toolbutton.setPopupMode(MenuButtonPopup)
         add_layer_toolbutton.setText(GlobalHelper.tr('Add Layer'))
         add_layer_toolbutton.setIcon(QIcon(icon_path))
 

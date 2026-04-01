@@ -31,6 +31,7 @@ from .select_region_dlg import SelectRegionDlg
 from ..global_helper import GlobalHelper
 from .canvas_dot_item import CanvasDotItem
 from ..access_key_checker import check_access_key
+from ..compat import *
 
 import os
 import json
@@ -89,7 +90,7 @@ class SearchHandler(ActionHandler):
         self.search_form.tableWidget.cellDoubleClicked.connect(self.handle_double_click_table_item)
 
         # show dock widget
-        self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.search_widget)
+        self.iface.addDockWidget(LeftDockWidgetArea, self.search_widget)
 
     def unload(self):
         """unload this action handler"""
@@ -125,7 +126,7 @@ class SearchHandler(ActionHandler):
         url.setQuery(url_query)
         request = QNetworkRequest(url)
         reply = self.network_manager.blockingGet(request)
-        if reply.error() != QNetworkReply.NoError:
+        if reply.error() != NoError:
             return
         try:
             reply_json = json.loads(reply.content().data())
@@ -138,7 +139,7 @@ class SearchHandler(ActionHandler):
         if int(reply_json['status']) != 1:
             QMessageBox.information(self.search_widget,
                                     GlobalHelper.tr(u"AMap Search Error"),
-                                    GlobalHelper.tr(u"Your request to AMap server is unavailable."),QMessageBox.Ok)
+                                    GlobalHelper.tr(u"Your request to AMap server is unavailable."), QMessageBoxOk)
             return
 
         # add result to table widget.
@@ -181,7 +182,7 @@ class SearchHandler(ActionHandler):
         sel_region_dlg = SelectRegionDlg(prevRegionName=self.selected_region_name, parent=self.search_widget)
         sel_region_dlg.setModal(True)
         sel_region_dlg.show()
-        if sel_region_dlg.exec() != QDialog.Accepted:
+        if sel_region_dlg.exec() != Accepted:
             return
 
         self.selected_region_name = sel_region_dlg.get_selected_region()

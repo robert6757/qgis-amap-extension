@@ -22,8 +22,8 @@
 """
 
 from qgis.gui import QgsMapCanvasItem
-from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor
+from ..compat import *
 
 class NavigationPinItem(QgsMapCanvasItem):
     def __init__(self, canvas):
@@ -66,14 +66,14 @@ class NavigationPinItem(QgsMapCanvasItem):
             # convert from coordinates to canvas position.
             point = self.toCanvasCoordinates(self.origin_pin_location)
             painter.setBrush(QColor(0, 255, 0))
-            painter.setPen(Qt.NoPen)
+            painter.setPen(NoPen)
             painter.drawEllipse(point, self.radius, self.radius)
 
         if self.destination_pin_location is not None:
             # convert from coordinates to canvas position.
             point = self.toCanvasCoordinates(self.destination_pin_location)
             painter.setBrush(QColor(255, 0, 0))
-            painter.setPen(Qt.NoPen)
+            painter.setPen(NoPen)
             painter.drawEllipse(point, self.radius, self.radius)
 
         if self.waypoint_enable:
@@ -81,7 +81,7 @@ class NavigationPinItem(QgsMapCanvasItem):
                 # convert from coordinates to canvas position.
                 point = self.toCanvasCoordinates(self.waypoint_pins[waypoint_pin_index])
                 painter.setBrush(QColor(0, 255, 255))
-                painter.setPen(Qt.NoPen)
+                painter.setPen(NoPen)
                 painter.drawEllipse(point, self.radius, self.radius)
 
 

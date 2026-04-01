@@ -20,11 +20,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt5.QtCore import QMetaType
+
 from qgis.PyQt import uic
 from qgis.core import QgsNetworkAccessManager, QgsProject, QgsCoordinateTransform
 from qgis.core import QgsVectorLayer, QgsFields, QgsCoordinateReferenceSystem, QgsField, QgsFeature, QgsGeometry, QgsPointXY
-from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery, QVariant, QObject
+from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery, QVariant, QObject, QMetaType
 from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtWidgets import QMessageBox, QTableWidgetItem, QPushButton
 from qgis.gui import QgsMapToolEmitPoint
@@ -33,6 +33,7 @@ from ..global_helper import GlobalHelper
 from ..action_handler import ActionHandler
 from ..access_key_checker import *
 from .navigation_pin_item import NavigationPinItem
+from ..compat import *
 
 import os
 import json
@@ -101,7 +102,7 @@ class NavigationHandler(ActionHandler):
         self.navigation_form.cbTransportationType.currentTextChanged.connect(self.handle_transportation_changed)
 
         # show dock widget
-        self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.navigation_widget)
+        self.iface.addDockWidget(LeftDockWidgetArea, self.navigation_widget)
 
         self.sel_origin_tool = QgsMapToolEmitPoint(self.iface.mapCanvas())
         self.sel_origin_tool.canvasClicked.connect(self.handle_origin_tool_capture)
@@ -259,7 +260,7 @@ class NavigationHandler(ActionHandler):
         if self.origin_location is None or self.destination_location is None:
             QMessageBox.information(self.navigation_widget,
                                     GlobalHelper.tr(u"Warning"),
-                                    GlobalHelper.tr(u"Please select origin and destination on the map."),QMessageBox.Ok)
+                                    GlobalHelper.tr(u"Please select origin and destination on the map."), QMessageBoxOk)
             return;
 
         transportation_type = self.navigation_form.cbTransportationType.currentText()
@@ -280,7 +281,7 @@ class NavigationHandler(ActionHandler):
         url.setQuery(url_query)
         request = QNetworkRequest(url)
         reply = self.network_manager.blockingGet(request)
-        if reply.error() != QNetworkReply.NoError:
+        if reply.error() != NoError:
             return
         try:
             reply_json = json.loads(reply.content().data())
@@ -299,7 +300,7 @@ class NavigationHandler(ActionHandler):
         if int(reply_json['status']) != 1:
             QMessageBox.information(self.navigation_form,
                                     GlobalHelper.tr(u"AMap Search Error"),
-                                    GlobalHelper.tr(u"Your request to AMap server is unavailable."),QMessageBox.Ok)
+                                    GlobalHelper.tr(u"Your request to AMap server is unavailable."), QMessageBoxOk)
             return
 
         reply_route = reply_json["route"]

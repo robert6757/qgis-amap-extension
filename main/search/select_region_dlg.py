@@ -26,6 +26,7 @@ import os
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QHeaderView, QDialog, QTreeWidgetItem, QMessageBox
 from .region_dictionary import RegionDictionary
+from ..compat import *
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../../ui/SelectRegionDlg.ui'))
@@ -50,7 +51,7 @@ class SelectRegionDlg(QDialog, FORM_CLASS):
             self.locate_node(prevRegionName)
 
     def init_tree(self):
-        self.treeWidget.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.treeWidget.header().setSectionResizeMode(ResizeToContents)
 
         dic_data = RegionDictionary.get_json()
 
@@ -74,7 +75,7 @@ class SelectRegionDlg(QDialog, FORM_CLASS):
         if selected_treeitem is None:
             QMessageBox.information(self.setting_widget,
                                     self.tr(u"Warning"),
-                                    self.tr(u"Please select a region."),QMessageBox.Ok)
+                                    self.tr(u"Please select a region."), QMessageBoxOk)
             return;
         self.selected_region_name = selected_treeitem.text(0)
         self.accept()

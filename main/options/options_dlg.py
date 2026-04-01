@@ -44,6 +44,7 @@ class OptionsDlg(QDialog, FORM_CLASS):
         self.btnOK.clicked.connect(self.handle_click_ok)
         self.btnCancle.clicked.connect(self.handle_click_cancle)
         self.btnGetKey.clicked.connect(self.handle_click_get_key)
+        self.btnHelp.clicked.connect(self.handle_click_help)
         self.lineEditKey.setText(amap_key)
 
     def handle_click_ok(self):
@@ -56,4 +57,8 @@ class OptionsDlg(QDialog, FORM_CLASS):
 
     def handle_click_get_key(self):
         url = "https://lbs.amap.com/"
+        webbrowser.open(url)
+
+    def handle_click_help(self):
+        url = "https://www.phoenix-gis.cn/d/233-gao-de-dao-hang-qgischa-jian-zheng-shi-shang-xian-liao"
         webbrowser.open(url)

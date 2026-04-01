@@ -22,8 +22,8 @@
 """
 
 from qgis.gui import QgsMapCanvasItem
-from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor
+from ..compat import *
 
 class CanvasDotItem(QgsMapCanvasItem):
     def __init__(self, canvas):
@@ -46,5 +46,5 @@ class CanvasDotItem(QgsMapCanvasItem):
 
         # draw yellow point
         painter.setBrush(QColor(255, 255, 0))
-        painter.setPen(Qt.NoPen)
+        painter.setPen(NoPen)
         painter.drawEllipse(point, self.radius, self.radius)

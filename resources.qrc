@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/plugins/amap_extension">
+    <file>image/help.svg</file>
     <file>image/addlayer.png</file>
     <file>image/navigate.png</file>
     <file>image/options.png</file>

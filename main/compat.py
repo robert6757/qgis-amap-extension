@@ -30,24 +30,12 @@ QT_MAJOR_VERSION = int(QT_VERSION_STR.split(".")[0])
 IS_QT5 = QT_MAJOR_VERSION == 5
 IS_QT6 = QT_MAJOR_VERSION == 6
 
-if IS_QT5:
-    LeftDockWidgetArea = Qt.LeftDockWidgetArea
-    NoError = QNetworkReply.NoError
-    QMessageBoxOk = QMessageBox.Ok
-    ResizeToContents = QHeaderView.ResizeToContents
-    Checked = Qt.Checked
-    ToolButtonIconOnly = Qt.ToolButtonIconOnly
-    MenuButtonPopup = QToolButton.MenuButtonPopup
-    NoPen = Qt.NoPen
-    Accepted = QDialog.Accepted
-
-if IS_QT6:
-    LeftDockWidgetArea = Qt.DockWidgetArea.LeftDockWidgetArea
-    NoError = QNetworkReply.NetworkError.NoError
-    QMessageBoxOk = QMessageBox.StandardButton.Ok
-    ResizeToContents = QHeaderView.ResizeMode.ResizeToContents
-    Checked = Qt.CheckState.Checked
-    ToolButtonIconOnly = Qt.ToolButtonStyle.ToolButtonIconOnly
-    MenuButtonPopup = QToolButton.ToolButtonPopupMode.MenuButtonPopup
-    NoPen = Qt.PenStyle.NoPen
-    Accepted = QDialog.DialogCode.Accepted
+LeftDockWidgetArea = Qt.DockWidgetArea.LeftDockWidgetArea
+NoError = QNetworkReply.NetworkError.NoError
+QMessageBoxOk = QMessageBox.StandardButton.Ok
+ResizeToContents = QHeaderView.ResizeMode.ResizeToContents
+Checked = Qt.CheckState.Checked
+ToolButtonIconOnly = Qt.ToolButtonStyle.ToolButtonIconOnly
+MenuButtonPopup = QToolButton.ToolButtonPopupMode.MenuButtonPopup
+NoPen = Qt.PenStyle.NoPen
+Accepted = QDialog.DialogCode.Accepted

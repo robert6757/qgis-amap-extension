@@ -195,6 +195,8 @@ class SearchHandler(ActionHandler):
     def handle_double_click_table_item(self, row, column):
         # retrieve location from Name item.
         name_table_item = self.search_form.tableWidget.item(row, 0)
+        city_table_item = self.search_form.tableWidget.item(row, 1)
+        address_table_item = self.search_form.tableWidget.item(row, 2)
         longitude = float(name_table_item.data(self.__poi_longitude_item_role))
         latitude = float(name_table_item.data(self.__poi_latitude_item_role))
 
@@ -215,9 +217,11 @@ class SearchHandler(ActionHandler):
 
             pr = search_layer.dataProvider()
             pr.addAttributes([
-                QgsField("Name", QVariant.String),
-                QgsField("GCJ02_Longitude", QVariant.Double),
-                QgsField("GCJ02_Latitude", QVariant.Double)
+                QgsField(GlobalHelper.tr(u"Name"), QMetaType.Type.QString),
+                QgsField(GlobalHelper.tr(u"City"), QMetaType.Type.QString),
+                QgsField(GlobalHelper.tr(u"Address"), QMetaType.Type.QString),
+                QgsField("GCJ02_Longitude", QMetaType.Type.Double),
+                QgsField("GCJ02_Latitude", QMetaType.Type.Double)
             ])
             search_layer.updateFields()
             QgsProject.instance().addMapLayer(search_layer)
@@ -225,7 +229,9 @@ class SearchHandler(ActionHandler):
         # Add the search result point to the layer
         feat = QgsFeature(search_layer.fields())
         feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(longitude, latitude)))
-        feat.setAttribute("Name", name_table_item.text())
+        feat.setAttribute(GlobalHelper.tr(u"Name"), name_table_item.text())
+        feat.setAttribute(GlobalHelper.tr(u"City"), city_table_item.text())
+        feat.setAttribute(GlobalHelper.tr(u"Address"), address_table_item.text())
         feat.setAttribute("GCJ02_Longitude", longitude)
         feat.setAttribute("GCJ02_Latitude", latitude)
 

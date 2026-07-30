@@ -97,17 +97,17 @@
         <translation>请在地图上选择起点和终点。</translation>
     </message>
     <message>
-        <location filename="../main/search/search_handler.py" line="80"/>
+        <location filename="../main/search/search_handler.py" line="232"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../main/search/search_handler.py" line="80"/>
+        <location filename="../main/search/search_handler.py" line="233"/>
         <source>City</source>
         <translation>城市</translation>
     </message>
     <message>
-        <location filename="../main/search/search_handler.py" line="80"/>
+        <location filename="../main/search/search_handler.py" line="234"/>
         <source>Address</source>
         <translation>地址</translation>
     </message>
@@ -145,6 +145,11 @@
         <location filename="../amap_extension.py" line="290"/>
         <source>Options</source>
         <translation>设置</translation>
+    </message>
+    <message>
+        <location filename="../main/search/search_handler.py" line="209"/>
+        <source>AMap Search Result</source>
+        <translation>高德搜索结果</translation>
     </message>
 </context>
 <context>

@@ -80,7 +80,7 @@ class BasemapHandler(ActionHandler):
 
             self.addlayer_widget.setModal(True)
             self.addlayer_widget.show()
-            self.addlayer_widget.exec_()
+            self.addlayer_widget.exec()
 
     def handle_add_layer(self):
         if self.addlayer_form is None:

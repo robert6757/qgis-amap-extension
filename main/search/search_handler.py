@@ -198,16 +198,6 @@ class SearchHandler(ActionHandler):
         longitude = float(name_table_item.data(self.__poi_longitude_item_role))
         latitude = float(name_table_item.data(self.__poi_latitude_item_role))
 
-        # transform position
-        current_project_crs = QgsProject.instance().crs()
-        coord_trans = QgsCoordinateTransform(
-            QgsCoordinateReferenceSystem("EPSG:4326"),
-            current_project_crs,
-            QgsProject.instance(),
-        )
-
-        position_in_current_proj = coord_trans.transform(QgsPointXY(longitude, latitude))
-
         # draw dot to canvas
         map_canvas = self.iface.mapCanvas()
         if map_canvas is None:
@@ -220,18 +210,24 @@ class SearchHandler(ActionHandler):
         search_layer = layers[0] if layers else None
 
         if search_layer is None:
-            # Create memory point layer with current project CRS
-            search_layer = QgsVectorLayer(f"Point?crs={current_project_crs.authid()}", layer_name, "memory")
-            # Add 'Name' field
+            # Create memory point layer with geographic CRS (EPSG:4326)
+            search_layer = QgsVectorLayer("Point?crs=EPSG:4326", layer_name, "memory")
+
             pr = search_layer.dataProvider()
-            pr.addAttributes([QgsField("Name", QVariant.String)])
+            pr.addAttributes([
+                QgsField("Name", QVariant.String),
+                QgsField("GCJ02_Longitude", QVariant.Double),
+                QgsField("GCJ02_Latitude", QVariant.Double)
+            ])
             search_layer.updateFields()
             QgsProject.instance().addMapLayer(search_layer)
 
         # Add the search result point to the layer
         feat = QgsFeature(search_layer.fields())
-        feat.setGeometry(QgsGeometry.fromPointXY(position_in_current_proj))
+        feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(longitude, latitude)))
         feat.setAttribute("Name", name_table_item.text())
+        feat.setAttribute("GCJ02_Longitude", longitude)
+        feat.setAttribute("GCJ02_Latitude", latitude)
 
         search_layer.dataProvider().addFeatures([feat])
         search_layer.updateExtents()
@@ -239,7 +235,14 @@ class SearchHandler(ActionHandler):
         map_canvas.refresh()
 
         # pan to the location
-        map_canvas.setCenter(position_in_current_proj)
+        current_project_crs = QgsProject.instance().crs()
+        coord_trans = QgsCoordinateTransform(
+            QgsCoordinateReferenceSystem("EPSG:4326"),
+            current_project_crs,
+            QgsProject.instance(),
+        )
+        position_in_canvas_crs = coord_trans.transform(QgsPointXY(longitude, latitude))
+        map_canvas.setCenter(position_in_canvas_crs)
 
 
 

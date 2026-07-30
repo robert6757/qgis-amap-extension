@@ -21,8 +21,8 @@
  ***************************************************************************/
 """
 from qgis.PyQt import uic
-from qgis.core import QgsSettings, QgsNetworkAccessManager, QgsProject, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsPointXY
-from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery, QObject
+from qgis.core import QgsSettings, QgsNetworkAccessManager, QgsProject, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsPointXY, QgsVectorLayer, QgsFeature, QgsField, QgsGeometry
+from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery, QObject, QVariant
 from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.PyQt.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
 
@@ -213,10 +213,29 @@ class SearchHandler(ActionHandler):
         if map_canvas is None:
             return
 
-        if self.location_dot is None:
-            # create a blinking dot
-            self.location_dot = CanvasDotItem(map_canvas)
-        self.location_dot.set_location(position_in_current_proj)
+        # create or get a temporary layer for search results
+        layer_name = GlobalHelper.tr(u"AMap Search Result")
+
+        layers = QgsProject.instance().mapLayersByName(layer_name)
+        search_layer = layers[0] if layers else None
+
+        if search_layer is None:
+            # Create memory point layer with current project CRS
+            search_layer = QgsVectorLayer(f"Point?crs={current_project_crs.authid()}", layer_name, "memory")
+            # Add 'Name' field
+            pr = search_layer.dataProvider()
+            pr.addAttributes([QgsField("Name", QVariant.String)])
+            search_layer.updateFields()
+            QgsProject.instance().addMapLayer(search_layer)
+
+        # Add the search result point to the layer
+        feat = QgsFeature(search_layer.fields())
+        feat.setGeometry(QgsGeometry.fromPointXY(position_in_current_proj))
+        feat.setAttribute("Name", name_table_item.text())
+
+        search_layer.dataProvider().addFeatures([feat])
+        search_layer.updateExtents()
+
         map_canvas.refresh()
 
         # pan to the location
